@@ -271,14 +271,23 @@
     function adicionarAoCarrinho() {
         const codigoInput = document.getElementById('venda_produto_codigo').value;
         const qtdInput = document.getElementById('venda_quantidade').value;
+        
         if(!codigoInput || !qtdInput) return alert('Preencha código e quantidade.');
         
         const codigo = parseInt(codigoInput);
         const qtd = parseInt(qtdInput);
-        const produtoDb = produtosGlobal.find(p => p.codigo === codigo);
-        const nomeParaMostrar = produtoDb ? produtoDb.nome : 'Produto Desconhecido';
 
-        carrinho.push({ produto_codigo: codigo, quantidade: qtd, nome: nomeParaMostrar });
+        // Tenta achar o produto na lista carregada do banco
+        const produtoDb = produtosGlobal.find(p => p.codigo === codigo);
+        
+        // SE ACHAR VAZIO (NÃO EXISTE), BLOQUEIA AQUI MESMO!
+        if (!produtoDb) {
+            return alert('Erro: Código do produto não encontrado no estoque.');
+        }
+
+        // Se passar da trava, adiciona normalmente
+        carrinho.push({ produto_codigo: codigo, quantidade: qtd, nome: produtoDb.nome });
+        
         const container = document.getElementById('itens-container');
         container.innerHTML = carrinho.map(i => `<div class="item-carrinho">🌿 Cód: ${i.produto_codigo} - <strong>${i.nome}</strong> | Qtd: ${i.quantidade}</div>`).join('');
     }
