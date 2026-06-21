@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floricultura Jardim Web</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body onload="inicializarSistema()">
+
+<div class="container">
+    <div class="cabecalho-loja">
+        <h1>🌸 Floricultura Jardim Web 🌿</h1>
+        <p>Sistema Integrado de Gestão e Vendas</p>
+    </div>
+
+    <div class="menu-abas">
+        <button class="botao-aba ativo" onclick="abrirAba(event, 'aba-venda')">Nova Venda</button>
+        <button class="botao-aba" onclick="abrirAba(event, 'aba-cliente')">Cadastrar Cliente</button>
+        <button class="botao-aba" onclick="abrirAba(event, 'aba-produto')">Cadastrar Produto</button>
+    </div>
+
+    <div id="aba-venda" class="conteudo-aba ativo">
+        <h2>Estoque Disponível</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cód</th>
+                    <th>Produto</th>
+                    <th>Preço (R$)</th>
+                    <th>Estoque Atual</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-estoque-body">
+                <tr><td colspan="5">Buscando as flores no jardim...</td></tr>
+            </tbody>
+        </table>
+
+        <h2>Frente de Caixa</h2>
+        <div class="form-group">
+            <label>Cliente (Selecione na lista ou digite para buscar):</label>
+            <input type="text" id="venda_cpf" list="lista-clientes" placeholder="Busque por Nome ou CPF..." autocomplete="off">
+            <datalist id="lista-clientes"></datalist>
+        </div>
+
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 20px 0;">
+        <div class="form-group">
+            <label>Código do Produto (Ver tabela acima):</label>
+            <input type="number" id="venda_produto_codigo" min="1">
+        </div>
+        <div class="form-group">
+            <label>Quantidade:</label>
+            <input type="number" id="venda_quantidade" value="1" min="1">
+        </div>
+        <button type="button" class="btn-secundario" onclick="adicionarAoCarrinho()">+ Adicionar à Cesta</button>
+
+        <div id="lista-itens">
+            <strong>Cesta de Compras:</strong>
+            <div id="itens-container">Sua cesta está vazia.</div>
+        </div>
+        <button type="button" class="btn-sucesso" onclick="finalizarVenda()">Finalizar Venda</button>
+        <div id="msgVenda" class="mensagem"></div>
+    </div>
+
+    <div id="aba-cliente" class="conteudo-aba">
+        <h2>Novo Cliente</h2>
+        <div class="form-group">
+            <label>CPF:</label>
+            <input type="text" id="cad_cpf" placeholder="000.000.000-00" maxlength="14" oninput="mascaraCPF(this)">
+        </div>
+        <div class="form-group">
+            <label>RG:</label>
+            <input type="text" id="cad_rg" placeholder="00.000.000-0" maxlength="12" oninput="mascaraRG(this)">
+        </div>
+        <div class="form-group">
+            <label>Nome Completo:</label>
+            <input type="text" id="cad_nome">
+        </div>
+        <div class="form-group">
+            <label>Telefone:</label>
+            <input type="text" id="cad_telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mascaraTelefone(this)">
+        </div>
+        <div class="form-group">
+            <label>Endereço:</label>
+            <input type="text" id="cad_endereco">
+        </div>
+        <button type="button" class="btn-sucesso" onclick="cadastrarCliente()">Salvar Cliente</button>
+        <div id="msgCliente" class="mensagem"></div>
+    </div>
+
+    <div id="aba-produto" class="conteudo-aba">
+        <h2>Novo Produto</h2>
+        <div class="form-group"><label>Nome do Produto:</label><input type="text" id="cad_prod_nome"></div>
+        <div class="form-group">
+            <label>Tipo de Produto:</label>
+            <select id="cad_prod_tipo">
+                <option value="1">Flor</option>
+                <option value="2">Vaso</option>
+                <option value="3">Adubo</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Preço Unitário (R$):</label>
+            <input type="text" id="cad_prod_preco" placeholder="R$ 0,00" oninput="mascaraMoeda(this)">
+        </div>
+        <div class="form-group">
+            <label>Quantidade Inicial em Estoque:</label>
+            <input type="number" id="cad_prod_qtd" min="0">
+        </div>
+        <button type="button" class="btn-sucesso" onclick="cadastrarProduto()">Salvar Produto</button>
+        <div id="msgProduto" class="mensagem"></div>
+    </div>
+
+    <hr style="border: 0; border-top: 2px solid #ffcdd2; margin: 40px 0 20px 0;">
+    <div style="background-color: #ffebee; border: 1px solid #ffcdd2; padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="color: #c62828; font-weight: bold; display: block; margin-bottom: 8px;">Painel de Controle da Apresentação</span>
+        <button type="button" onclick="zerarSistemaCompleto()" style="background-color: #c62828; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">⚠️ Limpar Banco de Dados para Apresentar</button>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // MÁSCARAS DE PREENCHIMENTO
+    // ==========================================
+    function mascaraCPF(input) {
+        let v = input.value.replace(/\D/g, ""); 
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        input.value = v;
+    }
+
+    function mascaraRG(input) {
+        let v = input.value.replace(/\D/g, "");
+        v = v.replace(/(\d{2})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        input.value = v;
+    }
+
+    function mascaraTelefone(input) {
+        let v = input.value.replace(/\D/g, "");
+        v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+        v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+        input.value = v;
+    }
+
+    function mascaraMoeda(input) {
+        let v = input.value.replace(/\D/g, "");
+        if (v === "") { input.value = ""; return; }
+        v = (v / 100).toFixed(2) + "";
+        v = v.replace(".", ",");
+        v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        input.value = "R$ " + v;
+    }
+
+    // ==========================================
+    // LÓGICA DO SISTEMA
+    // ==========================================
+    let produtosGlobal = [];
+    let carrinho = [];
+
+    function inicializarSistema() {
+        carregarProdutos();
+        carregarClientes();
+    }
+
+    async function carregarProdutos() {
+        try {
+            const res = await fetch('/api/produtos');
+            produtosGlobal = await res.json();
+            
+            const tbody = document.getElementById('tabela-estoque-body');
+            tbody.innerHTML = '';
+
+            if(produtosGlobal.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum produto em estoque.</td></tr>';
+                return;
+            }
+
+            produtosGlobal.forEach(p => {
+                const estoqueClasse = p.quantidade_estoque <= 5 ? 'estoque-baixo' : '';
+                const precoFormatado = parseFloat(p.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.codigo}</td>
+                        <td>${p.nome}</td>
+                        <td>${precoFormatado}</td>
+                        <td class="${estoqueClasse}">${p.quantidade_estoque}</td>
+                        <td>
+                            <button onclick="excluirProduto(${p.codigo})" style="background-color: #e57373; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } catch (error) {
+            console.error("Erro ao carregar produtos", error);
+        }
+    }
+
+    async function excluirProduto(codigo) {
+        if(!confirm('Tem certeza de que deseja remover este produto do catálogo?')) return;
+        try {
+            const res = await fetch(`/api/produtos/${codigo}`, { method: 'DELETE' });
+            const data = await res.json();
+            if(res.ok) {
+                alert(data.mensagem);
+                carregarProdutos();
+            } else {
+                alert(data.erro);
+            }
+        } catch (error) {
+            alert('Erro ao processar a exclusão.');
+        }
+    }
+
+    async function zerarSistemaCompleto() {
+        if(!confirm('CUIDADO! Isso vai deletar TODOS os clientes, produtos e histórico de vendas que você cadastrou para limpar a tela para a apresentação. Deseja prosseguir?')) return;
+        try {
+            const res = await fetch('/api/sistema/reset', { method: 'POST' });
+            const data = await res.json();
+            alert(data.mensagem);
+            carrinho = [];
+            document.getElementById('itens-container').innerHTML = 'Sua cesta está vazia.';
+            document.getElementById('venda_cpf').value = '';
+            inicializarSistema();
+        } catch (error) {
+            alert('Erro ao limpar o sistema.');
+        }
+    }
+
+    async function carregarClientes() {
+        try {
+            const res = await fetch('/api/clientes');
+            const clientes = await res.json();
+            const datalist = document.getElementById('lista-clientes');
+            datalist.innerHTML = ''; 
+            clientes.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c.cpf;
+                option.text = c.nome;
+                datalist.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar clientes", error);
+        }
+    }
+
+    function abrirAba(evento, idAba) {
+        document.querySelectorAll('.conteudo-aba').forEach(aba => aba.classList.remove('ativo'));
+        document.querySelectorAll('.botao-aba').forEach(btn => btn.classList.remove('ativo'));
+        document.getElementById(idAba).classList.add('ativo');
+        evento.currentTarget.classList.add('ativo');
+        ocultarMensagens();
+        if(idAba === 'aba-venda') inicializarSistema();
+    }
+
+    function ocultarMensagens() {
+        document.querySelectorAll('.mensagem').forEach(msg => msg.style.display = 'none');
+    }
+
+    function exibirMensagem(idElemento, sucesso, texto) {
+        const div = document.getElementById(idElemento);
+        div.style.display = 'block';
+        div.className = `mensagem ${sucesso ? 'sucesso' : 'erro'}`;
+        div.innerHTML = texto;
+    }
+
+    function adicionarAoCarrinho() {
+        const codigoInput = document.getElementById('venda_produto_codigo').value;
+        const qtdInput = document.getElementById('venda_quantidade').value;
+        if(!codigoInput || !qtdInput) return alert('Preencha código e quantidade.');
+        
+        const codigo = parseInt(codigoInput);
+        const qtd = parseInt(qtdInput);
+        const produtoDb = produtosGlobal.find(p => p.codigo === codigo);
+        const nomeParaMostrar = produtoDb ? produtoDb.nome : 'Produto Desconhecido';
+
+        carrinho.push({ produto_codigo: codigo, quantidade: qtd, nome: nomeParaMostrar });
+        const container = document.getElementById('itens-container');
+        container.innerHTML = carrinho.map(i => `<div class="item-carrinho">🌿 Cód: ${i.produto_codigo} - <strong>${i.nome}</strong> | Qtd: ${i.quantidade}</div>`).join('');
+    }
+
+    async function finalizarVenda() {
+        const cpf = document.getElementById('venda_cpf').value;
+        if(carrinho.length === 0) return alert('A cesta está vazia.');
+        if(cpf.length < 14) return alert('Por favor, selecione ou preencha o CPF completo.');
+
+        const dadosParaEnviar = carrinho.map(i => ({ produto_codigo: i.produto_codigo, quantidade: i.quantidade }));
+
+        try {
+            const res = await fetch('/api/vender', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cpf_cliente: cpf, itens: dadosParaEnviar })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                const totalFormatado = parseFloat(data.valor_total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const textoSucesso = `✨ Venda finalizada com sucesso! ✨<br><br><strong>Nota Fiscal:</strong> Nº ${data.nota_fiscal} <br> <strong>Valor Total:</strong> ${totalFormatado}`;
+                exibirMensagem('msgVenda', true, textoSucesso);
+                
+                carrinho = [];
+                document.getElementById('itens-container').innerHTML = 'Sua cesta está vazia.';
+                document.getElementById('venda_produto_codigo').value = '';
+                document.getElementById('venda_quantidade').value = '1';
+                document.getElementById('venda_cpf').value = '';
+                carregarProdutos();
+            } else {
+                throw new Error(data.erro);
+            }
+        } catch (error) {
+            exibirMensagem('msgVenda', false, error.message);
+        }
+    }
+
+    async function cadastrarCliente() {
+        const cpf = document.getElementById('cad_cpf').value;
+        if(cpf.length < 14) return alert('Por favor, preencha o CPF completo.');
+
+        const dados = {
+            cpf: cpf,
+            rg: document.getElementById('cad_rg').value,
+            nome: document.getElementById('cad_nome').value,
+            telefone: document.getElementById('cad_telefone').value,
+            endereco: document.getElementById('cad_endereco').value
+        };
+        try {
+            const res = await fetch('/api/clientes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                exibirMensagem('msgCliente', true, '🌸 Cliente salvo com sucesso!');
+                document.querySelectorAll('#aba-cliente input').forEach(input => input.value = '');
+                carregarClientes(); 
+            } else throw new Error(data.erro);
+        } catch (error) {
+            exibirMensagem('msgCliente', false, error.message);
+        }
+    }
+
+    async function cadastrarProduto() {
+        let precoTexto = document.getElementById('cad_prod_preco').value;
+        precoTexto = precoTexto.replace('R$ ', '').replaceAll('.', '').replace(',', '.');
+        const precoNumerico = parseFloat(precoTexto);
+
+        if (isNaN(precoNumerico)) return alert('Por favor, preencha o preço corretamente.');
+
+        const dados = {
+            nome: document.getElementById('cad_prod_nome').value,
+            tipo_codigo: document.getElementById('cad_prod_tipo').value,
+            preco: precoNumerico,
+            quantidade_estoque: document.getElementById('cad_prod_qtd').value
+        };
+        try {
+            const res = await fetch('/api/produtos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                exibirMensagem('msgProduto', true, '🌿 Produto salvo com sucesso!');
+                document.querySelectorAll('#aba-produto input').forEach(input => input.value = '');
+                document.getElementById('cad_prod_tipo').value = '1';
+                carregarProdutos();
+            } else throw new Error(data.erro);
+        } catch (error) {
+            exibirMensagem('msgProduto', false, error.message);
+        }
+    }
+</script>
+
+</body>
+</html>
