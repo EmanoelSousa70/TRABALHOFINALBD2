@@ -1,55 +1,54 @@
-# TRABALHOFINALBD2
-🌸 Floricultura Jardim Web
-Descrição do Projeto
-Este é um sistema web integrado de gestão e frente de caixa desenvolvido para automatizar as operações de uma floricultura. O grande diferencial arquitetural deste projeto é a delegação das regras de negócio e operações de CRUD diretamente para o banco de dados relacional, garantindo maior integridade e segurança das informações.
+# 🌸 Floricultura Jardim Web 🌿
 
-O sistema foi desenhado para gerenciar clientes, catálogo de produtos (com categorização de tipos) e o fluxo completo de vendas, gerando notas fiscais e atualizando estoques em tempo real.
+Sistema web integrado de gestão e frente de caixa desenvolvido para automatizar as operações de uma floricultura. O foco principal da aplicação é a implementação de regras de negócio e operações de CRUD diretamente no nível do banco de dados relacional.
 
-Destaques Técnicos (Regras de Negócio no Banco de Dados)
-Para garantir a consistência dos dados sem depender exclusivamente do backend, a lógica de negócio foi implementada em nível de banco de dados utilizando:
+---
 
-Stored Procedures: Todo o fluxo de inserção de dados (Cadastro de Clientes, Cadastro de Produtos e Geração de Vendas) é intermediado por procedures, encapsulando as operações de INSERT e DELETE.
+## 🎓 Contexto Acadêmico
 
-Stored Functions: A validação de disponibilidade de itens na frente de caixa é feita por uma função nativa (fn_checar_estoque), que impede a venda de produtos sem saldo suficiente antes de qualquer gravação.
+Este projeto foi construído como requisito prático para o curso de Análise e Desenvolvimento de Sistemas do Instituto Federal do Piauí (IFPI), aplicando conceitos avançados de estruturação e segurança em Banco de Dados.
 
-Triggers: A automação financeira e de logística acontece via gatilhos. Ao registrar a saída de um item (trg_apos_inserir_item), o banco de dados se encarrega autonomamente de abater a quantidade do estoque e recalcular o valor total da nota fiscal associada.
+---
 
-Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 
-Banco de Dados: MySQL (Lógica de negócios, Procedures, Functions, Triggers).
+* **Banco de Dados:** MySQL
+* **Backend:** Node.js com Express e pacote `mysql2`
+* **Frontend:** HTML5, CSS3 e Vanilla JavaScript
 
-Backend: Node.js com Express (Criação da API RESTful para comunicação com o banco via mysql2).
+---
 
-Frontend: HTML5, CSS3 e Vanilla JavaScript (Interface responsiva, assíncrona com fetch API e máscaras de validação em tempo real).
+## ⚙️ Arquitetura e Lógica no Banco de Dados
 
-Funcionalidades (Frente de Caixa e Gestão)
+O grande diferencial arquitetural deste projeto é a total delegação do CRUD e das validações para o banco de dados. A aplicação web funciona apenas como interface de usuário, enquanto o MySQL garante a integridade seguindo os requisitos:
 
-Painel de Vendas com busca dinâmica de clientes cadastrados.
+* **Stored Procedures:** Gerenciam de forma isolada todo o fluxo de inserção e exclusão no sistema (Cadastro de Clientes, Inserção de Produtos, Exclusão de itens do catálogo e Geração do Cabeçalho da Nota Fiscal).
+* **Stored Functions:** Realizam as validações críticas de negócio. A função `fn_checar_estoque` bloqueia e impede transações de produtos sem saldo físico suficiente no momento da venda.
+* **Triggers:** Responsáveis pela automação financeira e logística. O gatilho `trg_apos_inserir_item` atua silenciosamente no banco para atualizar o valor total da nota fiscal e realizar a baixa instantânea da quantidade em estoque após cada adição no carrinho.
 
-Catálogo de produtos em tempo real com alerta visual para estoques baixos.
+---
 
-Cesta de compras interativa.
+## ✨ Funcionalidades da Interface
 
-Validação de formulários (Máscaras de CPF, RG, Telefone e Moeda).
+* Painel de Frente de Caixa com busca dinâmica e listagem autocompletável de clientes.
+* Catálogo de estoque atualizado em tempo real com alertas visuais para quantidades críticas.
+* Cesta de compras interativa com cruzamento de dados de produtos.
+* Validação de formulários com aplicação de máscaras de preenchimento (CPF, RG, Telefone e Moeda Brasileira).
+* Painel de controle de testes com recurso de "Reset Completo" para limpar as tabelas antes de novas demonstrações ou avaliações.
 
-Painel de controle para zerar a base de testes facilmente.
+---
 
-Como Executar o Projeto Localmente
+## 🚀 Como Executar o Projeto Localmente
 
-Configuração do Banco de Dados:
+### 1. Configuração do Banco de Dados
+Abra o seu MySQL Workbench e execute o script SQL fornecido no projeto. Ele criará o banco `floricultura` e estabelecerá automaticamente todas as tabelas, Procedures, Functions e Triggers necessárias.
 
-Abra o MySQL Workbench e execute o arquivo script.sql (ou cole o script de criação) para gerar o banco floricultura, as tabelas, as procedures, functions e triggers.
+### 2. Configuração do Servidor Backend
+Navegue até a pasta `backend` utilizando o seu terminal.
+Execute o comando `npm install` para instalar as dependências necessárias para a API.
+Verifique se as credenciais de acesso ao seu MySQL (usuário e senha) no arquivo `server.js` estão corretas para o seu ambiente local.
+Inicie a comunicação executando `node server.js`.
 
-Configuração do Backend:
-
-Acesse a pasta backend pelo terminal.
-
-Execute npm install para baixar as dependências (express e mysql2).
-
-Verifique se as credenciais de acesso ao banco (usuário e senha) no arquivo server.js correspondem ao seu ambiente local.
-
-Inicie o servidor rodando o comando node server.js.
-
-Acesso ao Sistema:
-
-Abra o navegador e acesse http://localhost:3000.
+### 3. Acesso à Aplicação Web
+Com o servidor rodando, abra o seu navegador de preferência.
+Acesse o endereço `http://localhost:3000`.
